@@ -1,5 +1,7 @@
 # GhostByte
 
+[Watch it live](https://www.youtube.com/@GhostByte-c5q/shorts)
+
 Fully automated pipeline that generates and uploads YouTube Shorts on a schedule, no manual input.
 
 Every 3 hours it picks a topic, writes a script, renders a video, and uploads it to YouTube. It runs unattended.
