@@ -1,0 +1,179 @@
+{
+  "name": "GhostByte Auto Upload",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2dd5fda7-5828-41a1-a408-0261048d93be",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ JSON.parse($('Gemini').item.json.candidates[0].content.parts[0].text.replace(/```json\\n?|\\n?```/g, '').trim()).title }}",
+        "regionCode": "US",
+        "categoryId": "25",
+        "options": {
+          "description": "={{ JSON.parse($('Gemini').item.json.candidates[0].content.parts[0].text.replace(/```json\\n?|\\n?```/g, '').trim()).script }}\n\n🔔 Subscribe for daily news breakdowns!\n#Shorts #GhostByte #News #GenZ #Trending"
+        }
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        816,
+        0
+      ],
+      "id": "06d5c7e4-9307-497d-be96-93ee92f288ba",
+      "name": "Upload a video",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "2yXhJElOiSJsYkpS",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.1.90:5679",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "script",
+              "value": "={{ JSON.parse($('Gemini').item.json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim()).script }}"
+            },
+            {
+              "name": "topic",
+              "value": "={{ JSON.parse($('Gemini').item.json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim()).keywords }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        400,
+        0
+      ],
+      "id": "1cd37034-4ef7-43b3-887b-c8b9b6f9ced5",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=YOUR_GEMINI_API_KEY",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Generate an engaging YouTube Short for Gen Z. Pick a RANDOM topic from this list each time - rotate through them: space facts, psychology tricks, history mysteries, money hacks, food science, animal facts, technology future, human body facts, optical illusions, social media trends, sports records, famous crimes, natural disasters, celebrity facts, life hacks. Return a JSON object with exactly three fields: 'title' (catchy title under 80 chars), 'script' (natural spoken voiceover under 60 seconds, no formatting), 'keywords' (2-3 word Pexels search term matching the video topic visually). Return only valid JSON, no backticks, no markdown.\"\n    }]\n  }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        0
+      ],
+      "id": "967c0e38-22ba-4011-a9a0-2d0507a6c780",
+      "name": "Gemini",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/n8nDataTableUploads/final_video.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        0
+      ],
+      "id": "ff3c4f9e-c1c6-4825-91b5-6e0ca44a6363",
+      "name": "Read/Write Files from Disk1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk1": {
+      "main": [
+        [
+          {
+            "node": "Upload a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a video": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "9c6832a3-d2ec-4783-9612-b72d175fa1cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c5903ce3e5aaab3b56fd4ad184d6fbaa7921a2ff6dcb01eecaeea21ad4da6cc2"
+  },
+  "id": "tjnB1RcVUs66Mu9p",
+  "tags": []
+}
